@@ -1,52 +1,21 @@
-#####################################################################################
-#   Copyright (C) 2020 Neha Khetan @ khetanneha@gmail.com
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-####################################################################################
-
-'''
-Neha Khetan, 
-AsterQuant: 2017 - 2020
-@ Athale Lab, IISER Pune
-
-Platform to measure aster statistics.
-Developed for Multi - aster project
-Voronoi analysis was initially performed in matlab, 2016
-'''
-
-
+from pylab import plot, ginput, show, axis
 import sys
-import os
-import cv2
 import numpy as np
+import os
 from random import uniform
+from scipy.spatial import Voronoi, Delaunay , voronoi_plot_2d
 import matplotlib.pyplot as plt
-#import matplotlib.image as mpimg
+import matplotlib.image as mpimg
+from shapely.geometry import MultiPoint, Point, Polygon
 from shapely.ops import polygonize
 from scipy.spatial import ConvexHull
 from matplotlib.ticker import MaxNLocator
-from pylab import plot, ginput, show, axis
-from shapely.geometry import MultiPoint, Point, Polygon
-from scipy.spatial import Voronoi, Delaunay , voronoi_plot_2d
-
+import cv2
 import plot_voronoi as plotdata
-import plot_Simvoronoi as plotsimdata
 
 
 
-
-# ====================================================================================================================================================
-
+#------------------------------------------------
 # Area of a triangle
 def triarea( a , b , c ):
 	triarea = 0.5*abs( np.cross( (b - a ) , ( c - a ) )  )
@@ -78,39 +47,9 @@ def pointOnCirl( radius  , theta  , w , h ):
 
 
 
-def calculate_ellipseAxis( dtpoints):
-	mindist = 10000000000
-	maxdist = -10000000000
-	for i in  range( len(dtpoints) ):
-		for j in range( i+1 , len(dtpoints)):
-			bounddist = get_sdistance( dtpoints[i] , dtpoints[j]  )
-			if bounddist > maxdist:
-				maxdist = bounddist
-
-			if bounddist < mindist:
-				mindist = bounddist
-				print(dtpoints[i] , dtpoints[j], mindist)
-	maxdist = maxdist/4.0
-	mindist = mindist/4.0
-	return ( np.sqrt( maxdist )+OffsetAU , np.sqrt( mindist )+OffsetAU)
-
-
-
-
-def pointOnCirl2( A , B , theta , w , h ):
-	theta =theta*np.pi/180.0
-	return A*np.cos( theta ) + w/2  , B*np.sin( theta ) + h/2 
-
-
-def checkCircle2( dp ):
-	return(  ( ( dp[0] -  w/2.0 )**2)/(e_A**2) +  (( dp[1] - h/2.0)**2)/(e_B**2) ) < 1 
-	
-
-
 # return true if data lies inside the circle, false if outside
 def checkCircle( dp , radius ):
-	return( (( dp[0] - (w/2.0))**2 + (dp[1] - (h/2.0))**2 ) < (radius + OffsetAU )**2 )
-
+	return( (( dp[0] - (w/2.0))**2 + (dp[1] - (h/2.0))**2 ) < radius**2 )
 
 # return sq. dist	
 def get_sdistance(P1, P2):
@@ -143,197 +82,78 @@ def merge_coordinates(datapoints, dist_cutoff):
 		if i not in exclude_datapoints:
 			merged_datapoints.append(datapoints[i]);
 	return merged_datapoints
-                                                              
+
+
 
 #############################################################################################################
+# 					                       Specify PATHs, filenames, parameters , criterion
 #############################################################################################################
 
-# 					             Specify PATHs, filenames, parameters , criterion
 
-#############################################################################################################
-#############################################################################################################
+IPATH_Image     = './'         #'./image/'
+filenameImage   =  'input_2_image009_cf_0.189' 
 
-# Added for the purpose of demonstration: Minimal param
-print("=======================================================================================================================\n")
-print("                                                         Aster Analysis : Demo mode                                    \n")
-print("=======================================================================================================================\n\n")
-print("        Option 1: Experiment data , choose aster centroids interactively \n")
-print("        Option 2: Experiment data , choose aster centroids from file \n")
-print("        Option 3: Simulation data , aster centroids are read from a file \n")
-option = input( "Enter your choice:")
-
-if (option == '1'):
-	exptdata				 = 1    	# For Experiment =1 ; for simulation = 0
-	selectImage              = 1        # Selection of aster centroids: From Image = 1 ; From files = 0
-	px2micron                = 0.19          #0.189   # if Expt
-
-elif (option == '2'):
-	exptdata				 = 1    	# For Experiment =1 ; for simulation = 0
-	selectImage              = 0        # Selection of aster centroids: From Image = 1 ; From files = 0
-	px2micron                = 0.19          #0.189   # if Expt
-
-elif (option =='3'):
-	exptdata				 = 0    	# For Experiment =1 ; for simulation = 0
-	px2micron                = 120/580.0          #0.189   # if Expt
-else:
-	print("Error error!!!")
+OPATH_fig		= './'         # './output_fig/' # 
+OPATH_files		= './'         #'./output_files/' # 
+outfilename     = 'input_2_image009_cf_0.189'    # name by which the o/p files should be prefixed or suffixed 
 
 
-# ===========================================================================================================================
+NumberBoundaryPoints  = 25 
+method                = 3   
+px2micron             = 0.189   # 1 px corresponds to um?
+# work in progress to read metadata here n infer as in matlab - for now - its an input param for user
 
-if not os.path.exists('./output_fig'):
-    os.makedirs('./output_fig')
-if not os.path.exists('./output_files'):
-    os.makedirs('./output_files')
+typeimage               = 'expt'   # work in progress, - pls ignore for now
 
-
-IPATH_Image            	   = './expt/'         #'./image/'
-filenameImage              =  'input_zProject_1_to_9_MAX_BID_1970_(10microM)_1.lif_Series046_cf_0.19' #'input_2_image009_cf_0.189' 
-
-
-IPATH_sim              	   = './sim/'
-filenameSim                = 'astertxyz_00'
-IPATH_SimImage             = './sim/'         
-filenameSimImage           = 'Final_image_00' #'input_2_image009_cf_0.189' 
+vizpt                 	= 1  # bool for visual representation of voronoi plot. 
+						   # 0: minimal optimized bp represented 
+						   # 1: additional points represented but not considered for stats
+NumberBoundaryPointsViz = 35
 
 
 
-OPATH_fig		      	   = './output_fig/' # 
-OPATH_files		           = './output_files/' # 
-outfilename                = 'test'  #'input_2_image009_cf_0.189'    # name by which the o/p files should be prefixed or suffixed 
+OffsetAU	            = 0      # not used now, exists due to historical reasons - pls ignore
 
+overlay_plot            = 1
+cuttoff_merge_expt      = 10 # value for cut-off
+exptdata                = 1
 
-
-
-# -----                    INPUT FROM USER
- 
-'''
-# ----------------- Experiment demo
-exptdata				 = 1    	# For Experiment =1 ; for simulation = 0
-selectImage              = 0        # Selection of aster centroids: From Image = 1 ; From files = 0
-px2micron                = 0.19          #0.189   # if Expt
-# ------------------ Simulation demo
-exptdata				 = 0    	# For Experiment =1 ; for simulation = 0
-selectImage              = 1        # Selection of aster centroids: From Image = 1 ; From files = 0
-px2micron                = 120/580.0              # if Sim
-# 1 px corresponds to um?
-# To do: work in progress to read metadata here n infer as in matlab - for now - its an input param for user
-'''
-
-nRuns                    = 1
-simRadius                = 60.0
-prefact                  = 0.1 # Generally 0.1 works well
-
-
-NumberBoundaryPoints     = 25 
-method                   = 3   
-typeimage                = 'expt'   # work in progress, - pls ignore for now
-vizpt                 	 = 1  # bool for visual representation of voronoi plot. 
-						      # 0: minimal optimized bp represented 
-						      # 1: additional points represented but not considered for stats - if true the points are set by NumberBoundaryPointsViNumberBoundaryPointsViz  = 25
-overlay_plot             = 1  # not in use - historical reasons
-cuttoff_merge_expt       = 5 #10 # USed when the aster-centroids are read from simulation output- it is possible two asters are close to each other
-NumberBoundaryPointsViz  = 20
 
 #############################################################################################################
 # 					                        Read in the image & extract aster centroids 
 #############################################################################################################
  
+img = cv2.imread( IPATH_Image + filenameImage + '.tif' , 0   )
+h   = img.shape[0]
+w   = img.shape[1]
+print( h , w  )
+# mean half dimension along length n width
+CellRad  =  (( h/2.0 + w/2.0 )/2.0 )  
+
 
 if exptdata:
-	img = cv2.imread( IPATH_Image + filenameImage + '.tif' , -1  )
-	h   = img.shape[0]
-	w   = img.shape[1]
-	
-	#print( h , w  )
-	# mean half dimension along length n width
-	CellRad                 = max(h/2.0 , w/2.0)  		#(( h/2.0 + w/2.0 )/2.0 ) - not a good idea because if oval shaped cells
-	# based on historical reasons - optimized to this - do check and correct if needed
-	OffsetAU	            = ( prefact*CellRad )     
- 
+	img = img[::-1]         # inversions required if - image & coordinates need to be overlaid
 
+f1 = plt.figure(1), plt.imshow( img )
 
-	if selectImage:
-		f1 = plt.figure(1), plt.imshow( img , origin = 'lower' )
-
-		# aster centroids interactively chosen by the user.
-		# After choosing the points - Press enter and close the image window for the code to continue
-		data_points = ginput( -1, show_clicks = True , timeout = 0 ) 
-		plt.show()
-		plt.close()
-
-		wlines=""
-		for dp in data_points:
-			wlines+=str(dp[0])+'\t'+str(dp[1])+'\n'
-		outf = open( IPATH_Image + 'selected_points.out','w')
-		outf.writelines(wlines)
-		outf.close()
-
-	else:
-		inf = open( IPATH_Image +'selected_points.out','r')
-		lines = inf.readlines()
-		inf.close()
-
-		data_points = []
-		for l in lines:
-			toks = list(map(float,l.strip().split('\t') ) )
-			data_points.append(tuple(toks))
-		#print(data_points)
-
-
-
-
-
-if not exptdata:
-	outfilename     = filenameSim  
-	CellRad          = simRadius
-	OffsetAU	     = ( prefact*CellRad )
-	img = cv2.imread( IPATH_SimImage + filenameSimImage + '.ppm' , -1  )
-	h   = img.shape[0] 
-	w   = img.shape[1] 
-	print( w , h )
-
-	#px2micron	    =  float((2*CellRad)/max( h , w )) #163.00/1024.0
-	#print(px2micron)
-	f1    =  open( IPATH_sim + filenameSim + '.out', 'r' )  
-	lines = f1.readlines()
-	f1.close()
-
-	data_points = []
-	for l in lines:
-		toks = list(map(float,l.strip().split(',') ) )
-		toks[0] = float( toks[0]) 
-		toks[1] = float( toks[1]) 
-		data_points.append(tuple(toks))
-
-
+# aster centroids interactively chosen by the user.
+# After choosing the points - Press enter and close the image window for the code to continue
+data_points = ginput( -1, show_clicks = True , timeout = 0 ) 
+plt.show()
+plt.close()
 
 # not needed in the Current experimental data set as the centroids are manually choosen hence the resolution is not a problem 
 # needed for simulation data - as the coordinates of two asters can be same
-# And needed for work in progress: Aster detection from images directly
 if not exptdata:
 	data_points =  merge_coordinates( data_points , cuttoff_merge_expt )
 
-print("############################################################################################################################")
-print("                             Optimizing the number of boundary points required                                              ")
+print("#################################################")
+print("Optimizing the number of boundary points required")
 
 
-'''
-# if ellipse
-testpt = np.array( data_points )
-hullBound = ConvexHull( testpt)
-print("HV",hullBound.vertices )
-print( testpt[hullBound.vertices])
-e_A, e_B = calculate_ellipseAxis( testpt[hullBound.vertices])        
-print( "papa", e_A , e_B )
-
-#print("cell rad", CellRad)
-'''
-
-#######################################################################################################################################################################
-# 					 		                       Optimizing the number of boundary points 
-#
-#######################################################################################################################################################################
+#############################################################################################################
+# 					                        Optimizing the number of boundary points 
+#############################################################################################################
 
 
 # Method : ARE HISTORICAL REASONS and not really alternative methods   
@@ -353,8 +173,6 @@ if method == 2 :
 	OuterRad = CellRad 
 	max_nbp = 0; 
 	max_counter = 0;
-
-	'''
 	while max_nbp <= 1:
 		
 		
@@ -396,7 +214,7 @@ if method == 2 :
 
 		OuterRad = OuterRad + 1
 		#print max_nbp
-	'''
+
 
 
 else:
@@ -404,7 +222,6 @@ else:
 	# method 3
 	OuterRad = CellRad
 	max_nbp = 0; max_counter = 0
-
 
 	print("Generating boundary points for outer radius:" , OuterRad)
 	for nbp in range(  1  , NumberBoundaryPoints ):
@@ -415,13 +232,11 @@ else:
 		# Generating "nbp" boundary points 
 		boundary_points = []
 		outer_bp        = []
-		
 		for ii in range( 0 , len( anglesbound) ):		
 			xval , yval = pointOnCirl(  CellRad , anglesbound[ii] , w , h  )
-			#xval , yval = pointOnCirl2(  e_A, e_B , anglesbound[ii] , w , h  )
 			boundary_points.append( [ xval , yval ]  )
-			#xvalx , yvaly = pointOnCirl(  OuterRad , anglesbound[ii] , w , h  )
-			#outer_bp.append( [ xvalx , yvaly ]  )
+			xvalx , yvaly = pointOnCirl(  OuterRad , anglesbound[ii] , w , h  )
+			outer_bp.append( [ xvalx , yvaly ]  )
 
 		
 		# DATA POINTS = data + boundary
@@ -435,7 +250,6 @@ else:
 		counter      =  0
 		for k in vortmp.vertices:
 			chk1 = checkCircle( k , CellRad )  # checks if the point is inside the circle
-			#chk1 = checkCircle2( k  )
 			
 			if ( (chk1 ==False) ):
 				counter+=1;
@@ -462,7 +276,7 @@ print(" Multiple runs for randomized points")
 # 					        Statistics on tesellating with the optimized number of boundary points
 #############################################################################################################
 
-
+nRuns = 1
 polygonArea = []
 polygonSides = []
 # Multiple runs with the same number of boundary points which are equidistant to each other - 
@@ -482,11 +296,14 @@ for nRuns in range( 0, nRuns ):
 	new_angles = angles + angle_diff*np.random.uniform( 0 , 1 )
 	angles = new_angles
 
-	inner_bp =[]
+		
+	outer_bp = [] # not reqd here. exists cuz of historical reason
+	inner_bp = []
 	for ii in range( 0 , len( angles) ):		
 		xval , yval = pointOnCirl(  CellRad , angles[ii] , w , h  )
-		#xval , yval = pointOnCirl2(  e_A, e_B , anglesbound[ii] , w , h  )
 		inner_bp.append( [ xval , yval ]  )
+		xvalx , yvaly = pointOnCirl(  OuterRad , angles[ii] , w , h  )
+		outer_bp.append( [ xvalx , yvaly ]  )
 
 
 
@@ -520,7 +337,6 @@ for nRuns in range( 0, nRuns ):
 			# increment the polygonality if at the boundary
 			for k in vor.vertices[polygonverticesIndx]:
 				chk1 = checkCircle( k , CellRad ) 
-				#chk1 = checkCircle2( k  )
 		
 				if ( (chk1 ==False) ):
 					LenCounter=1
@@ -598,44 +414,13 @@ for nRuns in range( 0, nRuns ):
 
 
 	if vizpt:
-		bp4viz = NumberBoundaryPointsViz #max_nbp*2
+		bp4viz = NumberBoundaryPointsViz
 	else:
 		bp4viz = max_nbp
+	plotdata.plotvoronoiOutput( data_points , vor , CellRad, inner_bp, outer_bp , nRuns , outfilename , OPATH_fig  , method  , bp4viz , w , h , OffsetAU , typeimage, img )
 	
-
-
-	#plotdata.plotvoronoiOutput( data_points , vor , CellRad,  nRuns , inner_bp  outfilename , OPATH_fig  , method  , bp4viz , w , h , OffsetAU , typeimage, img )# ,  e_A , e_B )
-
-
-	
-	
-	if exptdata:
-		inputimg = cv2.imread( IPATH_Image + filenameImage + '.tif' )  # BGR
-		inputimg = cv2.cvtColor( inputimg , cv2.COLOR_BGR2RGB )
-		plotdata.plotvoronoiOutput( data_points , vor , CellRad,  1  ,   outfilename , OPATH_fig  , method  , bp4viz , w , h , OffsetAU , typeimage, img )# ,  e_A , e_B )
-		plotdata.plotvoronoiOverlay( data_points , CellRad , 1 ,  outfilename , OPATH_fig  , bp4viz , w , h , OffsetAU , typeimage, inputimg ) #, e_A , e_B  )
-		#plotdata.plotvoronoiOverlayRaw( data_points,  CellRad , nRuns ,  inner_bp , outfilename , OPATH_fig  , w , h , OffsetAU ,  inputimg   )
-
-
-
-	if not exptdata:
-		inputimg = cv2.imread( IPATH_SimImage + filenameSimImage + '.ppm' , -1  )
-		#plt.imshow( inputimg ), plt.show()
-		'''
-		#M = np.float32([[1,0,-75],[0,1,-75]])
-		#inputimg3 = cv2.warpAffine( inputimg2 ,M,( w ,h ))
-
-		scale_percent = 20.0 #1/px2micron  # percent of original size
-		width  = int( inputimg2.shape[1] * scale_percent / 100)
-		height = int( inputimg2.shape[0] * scale_percent / 100)
-		dim = (width, height) 
-		inputimg = cv2.resize( inputimg2, dim , interpolation = cv2.INTER_AREA)
-		#plt.imshow( inputimg ), plt.show()
-		'''
-		plotsimdata.plotvoronoiOutput( data_points  , CellRad,  1  ,   outfilename , OPATH_fig   , bp4viz , 0.0 , 0.0 , OffsetAU , img )# ,  e_A , e_B )
-		plotsimdata.plotvoronoiOverlay( data_points , CellRad , 1 ,  outfilename , OPATH_fig  , bp4viz , w , h , OffsetAU , typeimage, inputimg , px2micron ) #, e_A , e_B  )
-		#plotsimdata.plotvoronoiOverlayRaw( data_points, vor ,  CellRad , nRuns ,  inner_bp , outfilename , OPATH_fig  , w , h , OffsetAU ,  inputimg   )
-
+	#inputimg = mpimg.imread( IPATH_Image + filenameImage + '.tif')
+	#plotdata.plotvoronoiOverlay( data_points , vor , CellRad, inner_bp, outer_bp , nRuns , outfilename , OPATH_fig  , method  , bp4viz , w , h , OffsetAU , typeimage, inputimg )
 
 
 
@@ -686,20 +471,22 @@ for v in polygonArea:
 
 outf=open(OPATH_files + 'polygonArea' +  str( "%s" % outfilename ) + '.out','w')
 outf.writelines(wlines)
+outf.close()	
 
 
-# ======================================================================================================================================
-''''
---------------------------------------------------------------------------------------------------
- Work in Progress 
- 1. Modularize and remove redudancy 
- 2. input parameters - parser
- 3. image : conversion automate
- 4. Automate aster detection in experimental images
- 5. Automate the cell boundary detection and approiximation by ellipse to fit the cell shape 
- 6. Aster size and length detection and bundling params
- 7. Detection and analysis in time and z - such as embryos
- 8. port the analysis scripts from matlab to python an integrate here
- 9. Aster morphometry from image: quantitative
- -------------------------------------------------------------------------------------------------
- '''
+#--------------------------- save figures
+
+'''
+if overlay_plot:
+	plt.figure(1),
+	#plt.imshow( img )
+	plt.plot( data_points[:,0], data_points[:, 1], 'yo', ms=4)
+	for vpair in vor.ridge_vertices:
+		if vpair[0] >= 0 and vpair[1] >= 0:
+			v0 = vor.vertices[vpair[0]]
+			v1 = vor.vertices[vpair[1]]
+			# Draw a line from v0 to v1.
+			plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'w', linewidth = 1 )
+	plt.plot(vor.vertices[:,0], vor.vertices[:, 1], 'co', ms= 3 )
+	plt.savefig( OPATH + 'OverlayVor_' +  str( "%s" %  filename ) + '.pdf', bbox_inches='tight' , dpi=600 )
+'''
