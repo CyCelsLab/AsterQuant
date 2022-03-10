@@ -78,15 +78,15 @@ def plotvoronoiOutput( data_points, vor , CellRad, nRuns ,     outfilename , OPA
 				#chk1 = checkCircle2( v0 , w , h , e_A , e_B )
 				#chk2 = checkCircle2( v1 , w , h , e_A , e_B )
 				if (chk1 and chk2)==True:
-					plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'k', linewidth = 1 )
+					plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'k', linewidth = 3 )
 			   	
 				else:
-					plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'k-.', linewidth = 1 )	
+					plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'k-.', linewidth = 3 )	
 
 
 		ax = plt.gca()
 		ax.set_aspect('equal', adjustable='box')
-		plt.savefig( OPATH_fig + 'display_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=600 )
+		plt.savefig( OPATH_fig + 'display_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.pdf', bbox_inches='tight' , dpi=600 )
 		plt.close()
 
 
@@ -177,7 +177,7 @@ def plotvoronoiOverlay( data_points,  CellRad , nRuns ,  outfilename , OPATH_fig
 	#datapoints = np.flip( datapoints, axis = 1)
 	plt.plot( datapoints[:,0], datapoints[:, 1], 'go', ms=4)
 	#plt.plot( np.array(boundary_points)[:,0], np.array(boundary_points)[:, 1], 'yo', ms=3)
-	plt.plot(vor.vertices[:,0], vor.vertices[:, 1], 'co', ms= 2 )
+	plt.plot(vor.vertices[:,0], vor.vertices[:, 1], 'co', ms= 4 )
 	#plt.plot( hull_xpts , hull_ypts , 'g' , linewidth = 2 )
 
 	vert_subset = [];
@@ -192,10 +192,10 @@ def plotvoronoiOverlay( data_points,  CellRad , nRuns ,  outfilename , OPATH_fig
 			#chk1 = checkCircle2( v0 , w , h , e_A , e_B)
 			#chk2 = checkCircle2( v1 , w , h , e_A , e_B)
 			if (chk1 and chk2)==True:
-				plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'w', linewidth = 1 )
+				plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'w', linewidth = 0.5 )
 			   	
 			else:
-				plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'w-.', linewidth = 1 )	
+				plt.plot([v0[0], v1[0]], [v0[1], v1[1]], 'w-.', linewidth = 0.5 )	
 
 
 
@@ -203,7 +203,7 @@ def plotvoronoiOverlay( data_points,  CellRad , nRuns ,  outfilename , OPATH_fig
 	#ax.set_aspect('equal', adjustable='box')
 	ax.set_facecolor('#210000ff')
 
-	plt.savefig( OPATH_fig + 'Overlays_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=300 )
+	plt.savefig( OPATH_fig + 'Overlays_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.pdf', bbox_inches='tight' , dpi=300 )
 
 
 

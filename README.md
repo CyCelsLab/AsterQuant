@@ -1,26 +1,33 @@
+'''
+Neha Khetan, 
+AsterQuant: 2017 - present
+PYTHON SCRIPT FOR VORONOI TESSELLATIONS OF THE ASTERS in the EXPERIMENTS
+
 # AsterQuant
 Multi aster system quantitative analysis using voronoi tessellation
 
-'''
-Neha Khetan, 
-AsterQuant: 2017 - 
-PYTHON SCRIPT FOR VORONOI TESSELLATIONS OF THE ASTERS in the EXPERIMENTS
+
+Platform to measure aster statistics  i.e. packing and spatial analysis
+Developed for Multi - aster project
+Can be extended to multiple systems
+@ Athale lab: parts of the work published in
+Khetan N, Pruliere G, Hebras C, Chenevert J and Athale CA. (2021) Self-organized optimal packing of kinesin-5-driven microtubule asters scales with cell size. J Cell Sci. 134(10):jcs257543.
+
 '''
 
 
 ## This folder contains 3 scripts:
-Main file: AsterQuant_V4.py
-           and
-           plot_voronoi.py
-           plot_Simvoronoi.py
--> All the three files should be in the same path
-
-
+Files
+1. AsterQuant_V6.py
+2. compute_functions.py
+3. plot_Simvoronoi.py
+4. plot_voronoi.py
+5. coordinate_merger.py
 
 
 ## -------------------------------
 To run
->> python AsterQuant_V4.py
+>> python AsterQuant_V6.py
 
 
 ## -------------------------------
@@ -32,56 +39,8 @@ Version and Libraries
 
 
 >> Folder structure:
-   a. expt b. sim  // These contain input files and images
+   a. expt b. sim                          // These contain input files and images
    b. output_fig and output_files // to store the outputs from a run
    
 
-
-
-## --------------      FOR DEMO PURPOSE: Example files and settings have been chosen as-------------------
-
-a) Demo of Experimental data:
-
-   Option 1: 
-
-	exptdata	         = 1    	# For Experiment =1 ; for simulation = 0
-	selectImage              = 1            # Selection of aster centroids: From Image = 1 ; From files = 0
-	px2micron                = 0.19         
-
-	
-   Option 2:
- 	exptdata	         = 1    	# For Experiment =1 ; for simulation = 0
-	selectImage              = 0            # Selection of aster centroids: From Image = 1 ; From files = 0
-	px2micron                = 0.19         
-
-
-
-
-In option 1: " selectImage  = 1"
--> An image will open. 
--> Select the aster centroids by clicking on it
--> Once all the centroids are selected. Press ENTER
--> Close the Image window.
--> The selected coordinates will be saved in the source folder
--> The code will do the tessellation and files, figures saved in the respective folders: output_files and output_fig
-
-In option 2:  " selectImage  = 0"
--> Ensure that the coordinates of aster centroids are saved in the source folder for the image that you wish to tessellate 
--> You have to do nothing - let the code tessellate - check the output files in the respective folders.
-
-
-
-b)Option 3: Demo of simulation data:
-	# ------------------ Simulation demo
-	exptdata	         = 0    	# For Experiment =1 ; for simulation = 0
-	selectImage              = 1        # Selection of aster centroids: From Image = 1 ; From files = 0
-	px2micron                = 120/580.0              # if Sim
-	'''
-
-
-# ----------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Currently,: px2micron parameter needs to be changed by the user for each image and filename
 
