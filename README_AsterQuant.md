@@ -21,6 +21,11 @@ The work pursued 2017- 2021 shared in 3 branches
 
 
 -----------------------------------------------------------------------------------------------------
+REFERENCEs:
+1) Khetan N, Pruliere G, Hebras C, Chenevert J and Athale CA. (2021) Self-organized optimal packing of kinesin-5-driven microtubule asters scales with cell size. J Cell Sci. 134(10):jcs257543. DOI:10.1242/jcs.257543
+2) Khetan N, Athale CA. (2022), Tessellation based quantitative framework for the spatial analysis of subcellular structures. Biophys. J. 121, 521a. DOI:10.1016/j.bpj.2021.11.2741
+
+=======================================================================================================
 **Version and Libraries dependencies** 
 Please install the following:
 1. Python version 3.7.7
