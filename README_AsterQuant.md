@@ -21,14 +21,34 @@ The work pursued 2017- 2021 shared in 3 branches
 
 
 -----------------------------------------------------------------------------------------------------
-
-**Version and Libraries**
+**Version and Libraries dependencies** 
+Please install the following:
 1. Python version 3.7.7
-2. numpy, scipy, 
-3. shapely, pylab , matplotlib
+2. Numpy 
+3. Scipy
+4. shapely 
+5. pylab  
+6. matplotlib
 
-**Usuage**
->> python AsterQuant_V6.py
+**Usuage for master branch: post-jcs-2021**
+Execute the following in the shell command line
+> python AsterQuant_V6.py
+
+**Output files** generated in the following folders:
+
+<output_fig>
+         
+         This contains: 
+         1. display_Voronoi  >> Data points and Voronoi tessellated image
+         2. Overlays_Voronoi >> Overlays above with the raw image if required
+
+<output_files>
+
+         Main file-names   
+         1. AllEutactest.out       >> euctactic measure 
+         2. All_NND.out            >> near neighbor distance (NND) for each Voronoi cell
+         3. polygonAreaLength.out  >> polygonality, area and lengths of/from each polygons
+      
 
 
 **Scripts**
@@ -40,8 +60,10 @@ The work pursued 2017- 2021 shared in 3 branches
 
 
 Folder structure
-   a. expt b. sim                          // These contain input files and images
-   b. output_fig and output_files         // to store the outputs from a run
-   
+1. expt                         // These contain input files and images
+2. sim                          // These contain input files and images
+3. output_fig and               // to store the outputs from a run - IMAGES
+4. output_files                 // to store the outputs from a run - MEASURES and ANALYSED DATA
+   ( Representative output files and images from phallusia, nematodes and simulations included )
 
 
