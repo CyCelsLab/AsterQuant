@@ -1,18 +1,19 @@
 '''
 Neha Khetan, 
+
 AsterQuant: 2017 - present
+
 PYTHON SCRIPT FOR VORONOI TESSELLATIONS OF THE ASTERS in the EXPERIMENTS
 
-# AsterQuant
-Multi aster system quantitative analysis using voronoi tessellation
 
+
+AsterQuant: Multi aster system quantitative analysis using voronoi tessellation
 
 Platform to measure aster statistics  i.e. packing and spatial analysis
-Developed for Multi - aster project
-Can be extended to multiple systems
-@ Athale lab: parts of the work published in
-Khetan N, Pruliere G, Hebras C, Chenevert J and Athale CA. (2021) Self-organized optimal packing of kinesin-5-driven microtubule asters scales with cell size. J Cell Sci. 134(10):jcs257543.
 
+Developed for Multi - aster project Can be extended to multiple systems
+
+@ Athale lab: parts of the work published in Khetan N, Pruliere G, Hebras C, Chenevert J and Athale CA. (2021) Self-organized optimal packing of kinesin-5-driven microtubule asters scales with cell size. J Cell Sci. 134(10):jcs257543.
 '''
 
 
