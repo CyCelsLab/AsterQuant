@@ -12,7 +12,7 @@ from scipy.spatial import ConvexHull
 from matplotlib.ticker import MaxNLocator
 import cv2
 import cv2
-import plot_voronoi as plotdata
+
 import plot_Simvoronoi as plotsimdata
 
 
