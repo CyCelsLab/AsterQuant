@@ -106,38 +106,44 @@ def merge_coordinates(datapoints, dist_cutoff):
 
 
 IPATH_Image         = './expt/' #'./Output_DATA/redo_thickLines/' #../rsk10uM_2021/' #NH4Cl/new/' # './../rsk-dose/1uM/' #'./10uM_RSk/' #'./image/'
-IPATH                   = './expt/'
-filenameImage      = 'cCelegans2018x' # 'ORIT_Celegans2018x' #'ORIT_Celegans2018x'                    #'MAX_Projet_.lif - Series023grt1_cf_0.1851'
+IPATH               = './expt/'
+OPATH_fig			= './output_fig/' # 
+OPATH_files			= './output_files/' # 
+OffsetAU	    	=  0      # not used now, exists due to historical reasons - pls ignore
+typeimage           ='expt'   # work in progress, - pls ignore for now
 
-OPATH_fig		= './output_fig/' # 
-OPATH_files		= './output_files/' # 
-outfilename                     = 'test' #'1 microM inh RSK.lif - Image011_CF_0.1804'    # name by which the o/p files should be prefixed or suffixed 
-
-px2micron                       = 1 # 120.0/150.0 #0.284   # 1 px corresponds to um?# work in progress to read metadata here n infer as in matlab - for now - its an input param for user
-
-OffsetAU	                  =  0      # not used now, exists due to historical reasons - pls ignore
-typeimage                       ='expt'   # work in progress, - pls ignore for now
-
-vizpt                                = 1  # bool for visual representation of voronoi plot. # 0: minimal bp represented 1: additional points represented but not considered for stats
-NumberBoundaryPointsViz = 25
+vizpt                    = 1  # bool for visual representation of voronoi plot. # 0: minimal bp represented 1: additional points represented but not considered for stats
+NumberBoundaryPointsViz  = 25
 overlay_plot   		     = 1
-cuttoff_merge_expt           = 3
+cuttoff_merge_expt       = 1
 exptdata  			     = 0
 
-selectImage 		            = 0  # Boolean
-FnameAsterCoor               =  'corr_T_Celegans2018x_scen.out'          # DEFAULT FILEname: 'selected_points.out'
 
-readBoundPoints               = 1 # 1 for reading from file-modified for ;  0 for constructing the boundary points
-FnamBoundPoints              = 'corr_T_Celegans2018x_1px_roi.txt'
-extn                                 = '.png'
+# ---------------- User reqd. inputs ----------------------
+# Image file
+filenameImage            = 'Fig4E' #'cCelegans2018x'  #  #'MAX_Projet_.lif - Series023grt1_cf_0.1851'
+px2micron                =  0.152 		 #1  120.0/150.0 #0.284   # 1 px corresponds to um?# work in progress to read metadata here n infer as in matlab - for now - its an input param for user
+extn                     = '.png'
+outfilename     	     = 'telly'       # 'zhiyi_b' #'1 microM inh RSK.lif - Image011_CF_0.1804'    # name by which the o/p files should be prefixed or suffixed 
 
 
+# Aster coordinate selection
+selectImage 		     = 0  # Boolean
+FnameAsterCoor           = 'selected_points.out' #'corr_T_Celegans2018x_scen.out' #
+
+# Boundary construction method
+method                   = 3 	# 1:no boundary ; 3 for circular approx ; 4 for reading from file  
+FnamBoundPoints          = 'corr_T_Celegans2018x_1px_roi.txt'
+#readBoundPoints         = 0 # 1 for reading from file-modified
+
+# unit for Quantification whether px or um
+unt  = " $\mu$m" # '(px)'                 #
+unt2 = " $\mu$m" + "$^{2}$"+ ')' #' (px'+ "$^{2}$"+ ')' 
 
 
 #############################################################################################################
-# 					                                            Read in the image & extract aster centroids 
+# 					            Read in the image & extract aster centroids 
 img = cv2.imread( IPATH_Image + filenameImage + extn , 0 ) 
-#img  = cv2.imread( IPATH_Image + 'Overlays_Voronoi_1 microM inh RSK.lif - Image009_CF_0.1875_nRun_1' + '.pngf' , 0 )
 h = img.shape[0]
 w = img.shape[1]
 #print( h , w )
@@ -147,14 +153,11 @@ NumberBoundaryPoints  = 35
 
 
 
-
-
-
 # Choose the aster centers
 if selectImage:
+
 	print("Select points or to read from a file set selectImage to 0 and provide the filename\n" )
 	f1 = plt.figure(1), plt.imshow( img , origin = 'lower' )
-
 	# aster centroids interactively chosen by the user.
 	# After choosing the points - Press enter and close the image window for the code to continue
 	data_points = ginput( -1, show_clicks = True , timeout = 0 ) 
@@ -179,18 +182,7 @@ else:
 	for l in lines:
 		toks = list(map(float,l.strip().split('\t') ) )
 		data_points.append(tuple(toks))
-	#print(data_points)
 
-'''
-#img = img[::-1]  # inversions required if - image & coordinates need to be overlaid
-f1 = plt.figure(1), plt.imshow( img )
-
-# aster centroids interactively chosen by the user.
-# After choosing the points - Press enter and close the image window for the code to continue
-data_points = ginput( -1, show_clicks = True , timeout = 0 ) 
-plt.show()
-plt.close()
-'''
 
 
 
@@ -199,13 +191,12 @@ plt.close()
 # needed for simulation data - as the coordinates of two asters can be same
 data_points =  merge_coordinates( data_points , cuttoff_merge_expt )
 
-print("#################################################")
 
 
-
-
-if readBoundPoints:
-
+print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+print("    Boundary Construction ")
+if method ==4:
+	print("Reading boundary points from the file")
 	''' 
 	6-7-19: 
 	Reading in boundary points for Yash data on C elegang
@@ -223,95 +214,45 @@ if readBoundPoints:
 	boundary_points = zip( xb, yb )
 	#print("read bps",  list(boundary_points) )
 	boundpt = np.array( list(boundary_points ))
-
+	max_nbp = len(xb);
 	fig1 = plt.figure()
 	plt.plot( boundpt[:,0], boundpt[:,1] , 'ko' , ms=4 )
 	plt.savefig( OPATH_fig + 'BoundaryPoints_' + '.pdf', bbox_inches='tight' , dpi=600 )
-	method = 4
-	
 	
 
-
-else:
-	print("Optimizing the number of boundary points required")
-
-	#############################################################################################################
-	# 					                        Optimizing the number of boundary points 
-	#############################################################################################################
+elif method == 1:
+	print("No need to construct boundary ...")
+	max_nbp = 0;
+	boundary_points = []
 
 
-	method = 3   
-	# 2: Considering expanison of the offset region as long as the packing fraction of all the voronois are within an error
-	#    the manual approach is automated. points are initialized between inner and outer circles , and that choice of distance is determined arbitarily.
-	#    while the number of points is optimized. IGNORE THIS FOR NOW. HISTORY
-	# 3: Just ensures that voronoi vertices are not inside the cell periphery. The infinit points are accounted in the polygonal calculation
-	#    by truncating them at the cell boundary (not implemented while plotting instead for visual representation a higher number of points
-	#    are initialized so that infinity points are brought close to the cell periphery)
-	# ignore the nomencalture -- historical reasons
-	# work under progress for getting rid of history and have a working script ( to do )
 
-	 
-	if method == 2 :
-		OuterRad = CellRad 
-		max_nbp = 0; 
-		max_counter = 0;
-		while max_nbp <= 1:
+
+#############################################################################################################
+# 					                        Optimizing the number of boundary points 
+############################################################################################################# 
+# 2: Considering expanison of the offset region as long as the packing fraction of all the voronois are within an error
+#    the manual approach is automated. points are initialized between inner and outer circles , and that choice of distance is determined arbitarily.
+#    while the number of points is optimized. IGNORE THIS FOR NOW. HISTORY
+# 3: Just ensures that voronoi vertices are not inside the cell periphery. The infinit points are accounted in the polygonal calculation
+#    by truncating them at the cell boundary (not implemented while plotting instead for visual representation a higher number of points
+#    are initialized so that infinity points are brought close to the cell periphery)
+# ignore the nomencalture -- historical reasons
+# work under progress for getting rid of history and have a working script ( to do )	
+
+elif method == 2:
+	OuterRad = CellRad 
+	max_nbp = 0; 
+	max_counter = 0;
+	while max_nbp <= 1:
 			
-			
-			print("Generating boundary points for outer radius:" , OuterRad)
-			for nbp in range(  2  , NumberBoundaryPoints ):
-				#for nbp in [NumberBoundaryPoints]:
-				#print "in loop:", nbp
-				#  Generating boundary points on a circle , if required, 
-				anglesbound = np.linspace( 0 , 360 , nbp )
-
-				boundary_points = []
-				outer_bp        = []
-				for ii in range( 0 , len( anglesbound) ):		
-					xval , yval = pointOnCirl(  CellRad , anglesbound[ii] , w , h  )
-					boundary_points.append( [ xval , yval ]  )
-					xvalx , yvaly = pointOnCirl(  OuterRad , anglesbound[ii] , w , h  )
-					outer_bp.append( [ xvalx , yvaly ]  )
-
-				# ---------------------------------------------------------------------
-				counter      =  0
-				points       =  data_points    +  boundary_points 
-				vortmp       =  Voronoi( points )
-				#----------------------------
-				for k in vortmp.vertices:
-					chk1 = checkCircle( k , CellRad ) 
-					chk2 = checkCircle( k , OuterRad )
-
-					#print chk1,chk2;
-					#if (((chk1 and chk2)==False) and (((chk1 | chk2)==True)) ):
-
-					if ( (chk1 ==False) and (chk2 ==True) ):
-						counter+=1;
-				
-				if ( (counter> max_counter) and (counter - nbp== 0 )):
-					max_counter = counter
-					max_nbp     = nbp
-				#print "!",  max_nbp 
-
-
-			OuterRad = OuterRad + 1
-			#print max_nbp
-
-
-
-	else:
-
-		# method 3
-		OuterRad = CellRad
-		max_nbp = 0; max_counter = 0
 		print("Generating boundary points for outer radius:" , OuterRad)
-		for nbp in range(  1  , NumberBoundaryPoints ):
-		#for nbp in [NumberBoundaryPoints]:
+		for nbp in range(  2  , NumberBoundaryPoints ):
+			#for nbp in [NumberBoundaryPoints]:
 			#print "in loop:", nbp
 			#  Generating boundary points on a circle , if required, 
 			anglesbound = np.linspace( 0 , 360 , nbp )
 
-			# Generating "nbp" boundary points 
 			boundary_points = []
 			outer_bp        = []
 			for ii in range( 0 , len( anglesbound) ):		
@@ -320,36 +261,83 @@ else:
 				xvalx , yvaly = pointOnCirl(  OuterRad , anglesbound[ii] , w , h  )
 				outer_bp.append( [ xvalx , yvaly ]  )
 
-			# ---------------------------------------------------------------------
-			counter      =  0
-			points       =  data_points    +  boundary_points 
-			vortmp       =  Voronoi( points )  # Voronoi tessellation done here
-			#----------------------------
-			
-			
-			# this checks how many polygon vertices lie outside the cirlce
-			for k in vortmp.vertices:
-				chk1 = checkCircle( k , CellRad ) 
-				
-				if ( (chk1 ==False) ):
-					counter+=1;
-			
-			# iteratively, checks whether the points that lie outside is larger than the earlier or not.
-			# Idea is to select for the Minimal number of input boundary point for which the maximal number of polygon 
-			# vertices are ON the circumference or outside the cell - so that aster centered cells account for the boundary
-			if ( (counter > max_counter) ):
-				#print (counter - nbp ) , counter
-				max_counter = counter
-				max_nbp     = nbp
-				
-			print( "!",  max_nbp , nbp , counter)
+				# ---------------------------------------------------------------------
+		counter      =  0
+		points       =  data_points    +  boundary_points 
+		vortmp       =  Voronoi( points )
+		#----------------------------
+		for k in vortmp.vertices:
+			chk1 = checkCircle( k , CellRad ) 
+			chk2 = checkCircle( k , OuterRad )
+			#print chk1,chk2;
+			#if (((chk1 and chk2)==False) and (((chk1 | chk2)==True)) ):
 
+			if ( (chk1 ==False) and (chk2 ==True) ):
+				counter+=1;
+				
+		if ( (counter> max_counter) and (counter - nbp== 0 )):
+			max_counter = counter
+			max_nbp     = nbp
+		#print "!",  max_nbp 
+
+
+	OuterRad = OuterRad + 1
+	#print max_nbp
+
+
+elif method ==3 :
+	print("Optimizing number of boundary points & Boundary constuction ")
+
+
+	# method 3
+	OuterRad = CellRad
+	max_nbp = 0; max_counter = 0
+	#print("Generating boundary points for outer radius:" , OuterRad)
+	for nbp in range(  1  , NumberBoundaryPoints ):
+		#for nbp in [NumberBoundaryPoints]:
+		#print "in loop:", nbp
+		#  Generating boundary points on a circle , if required, 
+		anglesbound = np.linspace( 0 , 360 , nbp )
+
+		# Generating "nbp" boundary points 
+		boundary_points = []
+		outer_bp        = []
+		for ii in range( 0 , len( anglesbound) ):		
+			xval , yval = pointOnCirl(  CellRad , anglesbound[ii] , w , h  )
+			boundary_points.append( [ xval , yval ]  )
+			xvalx , yvaly = pointOnCirl(  OuterRad , anglesbound[ii] , w , h  )
+			outer_bp.append( [ xvalx , yvaly ]  )
+
+		# ---------------------------------------------------------------------
+		counter      =  0
+		points       =  data_points    +  boundary_points 
+		vortmp       =  Voronoi( points )  # Voronoi tessellation done here
+		#----------------------------
+			
+			
+		# this checks how many polygon vertices lie outside the cirlce
+		for k in vortmp.vertices:
+			chk1 = checkCircle( k , CellRad ) 
+				
+			if ( (chk1 ==False) ):
+				counter+=1;
+			
+		# iteratively, checks whether the points that lie outside is larger than the earlier or not.
+		# Idea is to select for the Minimal number of input boundary point for which the maximal number of polygon 
+		# vertices are ON the circumference or outside the cell - so that aster centered cells account for the boundary
+		if ( (counter > max_counter) ):
+			#print (counter - nbp ) , counter
+			max_counter = counter
+			max_nbp     = nbp
+				
+		#print( "!",  max_nbp , nbp , counter)
+else:
+	print("ERRROR!! ")
 
 	# -------------------------------------------------------------	
-	print("No. of points at the boundary:" ,  max_nbp )
-	print("-----------------------------------------")
-	print("Tesselations with optimized boundary points.")
-	print(" Multiple runs for randomized points")
+print("No. of points at the boundary:" ,  max_nbp )
+#print("Multiple runs for randomized points")
+print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
 
@@ -358,7 +346,7 @@ else:
 # 					        Statistics on tesellating with the optimized number of boundary points
 #############################################################################################################
 
-print("Tessellating and statistics ....")
+print("Voronoi tessellations and statistics ....")
 nRuns = 1
 polygonArea = []
 polygonSides = []
@@ -380,34 +368,48 @@ for nRuns in range( 0, nRuns ):
 	
 	
 	
-	if readBoundPoints :
+	if method == 4:
 		inner_bp = boundpt
-		method = 4
 		
-		
-	else:
 
+	elif method ==3:
 		#  Generating boundary points on a circle 
 		angles = np.linspace( 0 , 360 , max_nbp  )
 		angle_diff = round(angles[2] - angles[1])
 		new_angles = angles + angle_diff*np.random.uniform( 0 , 1 )
 		angles = new_angles
 
-			
+				
 		outer_bp = [] # not reqd here. exists cuz of historical reason
 		inner_bp = []
 		for ii in range( 0 , len( angles) ):		
 			xval , yval = pointOnCirl(  CellRad , angles[ii] , w , h  )
 			inner_bp.append( [ xval , yval ]  )
-			xvalx , yvaly = pointOnCirl(  OuterRad , angles[ii] , w , h  )
-			outer_bp.append( [ xvalx , yvaly ]  )
+			#xvalx , yvaly = pointOnCirl(  OuterRad , angles[ii] , w , h  )
+			#outer_bp.append( [ xvalx , yvaly ]  )
+			#inner_bp = np.array( inner_bp )
+			boundpt = inner_bp
+				
 
+	elif method ==1:
+		inner_bp = []
+		boundpt  = []
 
+	else:
+		print("Pls. check the input param.")
 
 	# ---------------------------------------------------------------------
 	
+	if method == 1:
+		points = data_points
+	elif method ==3:
+		print("Tesselations with optimized boundary points.")
+		points       =  data_points    +  inner_bp
+	else:
+		points       =  data_points    +  inner_bp.tolist()
 
-	points       =  data_points    +  inner_bp.tolist()
+
+
 	vor           =  Voronoi( points )
 
 	# Iterating over the input points
@@ -466,7 +468,6 @@ for nRuns in range( 0, nRuns ):
 
 
 	# Storing the values of the voronoi areas
-
 	# ------- Output the coords , Polygon , Area of each region
 	npol_area = []
 	AreaCell = 0
@@ -592,9 +593,7 @@ for nRuns in range( 0, nRuns ):
 	plotdata.plotvoronoiOutput( data_points , vor , CellRad, nRuns , outfilename , OPATH_fig  , method  , bp4viz , w , h , OffsetAU , typeimage, img , boundpt  )
 	inputimg = mpimg.imread( IPATH_Image + filenameImage + extn ) #'.tif')
 	plotdata.plotvoronoiOverlay( vor , data_points , CellRad , 1 ,  outfilename , OPATH_fig  , bp4viz , w , h , OffsetAU , typeimage, inputimg , method, boundpt ) 	
-
-	if method == 4:
-		plotdata.plotvoronoiRaw( vor ,  CellRad , nRuns , boundpt , outfilename , OPATH_fig ,  w , h , OffsetAU ,  inputimg , method  )
+	plotdata.plotvoronoiRaw( vor ,  CellRad , nRuns , boundpt , outfilename , OPATH_fig ,  w , h , OffsetAU ,  inputimg , method  )
 
 
 	# =====================================================================================
@@ -604,21 +603,18 @@ for nRuns in range( 0, nRuns ):
 	
 
 	#np.savetxt(  OPATH_files + 'Phallusia_' +  str( "%s" % outfilename ) + '_nRun_'+ str( "%s" %  nRuns ) + '.out' ,  npol_area  , fmt='%.6f'  ,  delimiter='\t') 
-		
+	
+	AllnndVal = []	
 	# Near neigbor distances: in um
 	outfileNND = 'All_NND' + str( "%s" % outfilename ) + '_nRun_'+ str( "%s" %  nRuns ) + '.out'
 	fo = open( OPATH_files +  outfileNND , "w")
 	for k, v in near_neigh_distance.items():
 		fo.write('\t'.join(map(str, v[0])) + "\n" )
+		AllnndVal.append( v[0])
 	fo.close()
-
-
-
 	outfileEutac = 'AllEutac' + str( "%s" % outfilename ) + '_nRun_'+ str( "%s" %  nRuns ) + '.out'
 	#print( AllEutac )
 	np.savetxt(  OPATH_files + outfileEutac + '.out' ,  np.array(AllEutac)  , fmt='%.2f'  ,  delimiter='\t') 			
-
-
 	#print "packing fraction"
 	totalCellArea = (CellRad*CellRad*22.0)/7.0
 	#print  nRuns , round( ( (AreaCell)/( totalCellArea) )*100 , 2 )
@@ -630,7 +626,8 @@ for nRuns in range( 0, nRuns ):
 
 	
 #print (polygonSides)
-
+#print( AllLengths )
+#print( polygonArea )
 
 # ===================================================================================================================================================================
 print("Writing into the files......")
@@ -646,6 +643,172 @@ outf=open(OPATH_files + 'polygonAreaLengths' +  str( "%s" % outfilename ) + '.ou
 outf.writelines(wlines)
 outf.close()
 
+# ===================================================================================================================================================================
+
+# Plotting the data
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--------------------------------")
+print("Plotting the data ")
+import seaborn as sn
+sn.set_style('white')
 
 
 
+# Polygon HISTOGRAM ------------------------
+if np.min(polygonSides) < 3:
+	minPS = np.min(polygonSides)
+else:
+	minPS = 3
+
+if np.max(polygonSides) > 8:
+	maxPS = np.max(polygonSides)
+else:
+	maxPS = 8
+
+nbin =  np.arange( minPS , maxPS+1  , 1 )
+f1 =   plt.figure(1)
+plt.subplot(2,3 ,1 ),sn.histplot(data = polygonSides ,  stat = "probability" , discrete = True  )
+plt.xlabel('Polygonality' , fontsize=16)
+plt.ylabel('Frequency' , fontsize=16)
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize = 12)
+plt.xticks( nbin )
+h1 =plt.legend()
+#plt.show()
+
+
+
+# Cal. Voronoi Entropy n Irregularity: REQD: polygonSides, nbin
+f,b = np.histogram( polygonSides , bins= nbin )
+tmpv = []
+for k in (0 , len(f)-1):
+	if f[k] != 0:
+		pv = f[k]/sum(f)
+		tmpv.append( pv*np.log( pv ) )
+vorEnt =  round( -sum( tmpv ) , 3 ) 
+polygonSides = np.array(polygonSides, dtype = "float" )
+IRR =  round( ( np.std(polygonSides)/np.mean(polygonSides) ) , 3 )
+
+
+
+
+
+# All NND
+allnnd = []
+meanNe = []
+for k in AllnndVal:
+	allnnd.extend( k )
+	meanNe.append( float(np.min(k)) )
+#f4 = plt.figure()
+plt.subplot(2,3 ,2 ),
+sn.histplot( data = allnnd , stat = "probability" )
+plt.xlabel('NND'+ unt , fontsize=16)
+plt.ylabel('Frequency' , fontsize=16)
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+#plt.xticks( np.arange( np.min(allnnd) , np.max(allnnd) , 2 ))
+#plt.legend()
+#plt.show()
+
+
+# For circularity: REQD: polygonArea and AllLengths
+circ = []
+regL = []
+al   = []  
+ar   = []
+allen = []
+py    = []
+for pl2 in range(0, len( AllLengths[0] )-1):
+	if ( AllLengths[0][pl2] ):
+		circ.append( (round( (4*np.pi*polygonArea[0][pl2])/(sum( AllLengths[0][pl2]) )**2 , 3 )) )
+		regL.append( np.std(AllLengths[0][pl2])/np.mean(AllLengths[0][pl2]) )
+		#al.append( ( polygonArea[0][pl2] , np.std(AllLengths[0][pl2])/np.mean(AllLengths[0][pl2])  ))
+		al.append( ( polygonArea[0][pl2] , np.mean(AllLengths[0][pl2])  ))
+		ar.append( polygonArea[0][pl2] )
+		allen.extend( AllLengths[0][pl2] ) 
+		py.append( len( AllLengths[0][pl2] ))
+
+plt.subplot(2,3 ,3 ),
+sn.histplot( data = ar , stat = "probability" )
+plt.xlabel('Area' + unt2 , fontsize=16)
+plt.ylabel('Frequency' , fontsize=16)
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+
+		
+#f10 = plt.figure()
+plt.subplot(2,3 ,4 ),
+sn.histplot(data = allen ,  stat = "probability" , discrete = False  )
+#sn.boxplot(data = regL )
+#plt.xlim( [ 0 , 1])
+plt.xlabel('Length' + unt , fontsize=16)
+plt.ylabel('Frequency' , fontsize=16)
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+#plt.show()
+
+
+plt.subplot(2,3 ,5 ),
+sn.histplot(data = circ ,  stat = "probability" , discrete = False  )
+plt.xlim( [ 0 , 1])
+plt.xlabel('Circularity' , fontsize=16)
+plt.ylabel('Frequency' , fontsize=16)
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+#plt.show()
+
+# Eutacticity
+plt.subplot(2,3 , 6 ),
+sn.histplot(data = AllEutac ,  stat = "probability" , discrete = False  )
+plt.xlabel('Eutacticity' , fontsize=16)
+plt.ylabel('Frequency' , fontsize=16)
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize = 12)
+#plt.xticks( [0,0.5, 1] )
+plt.show()
+
+
+
+
+
+
+
+f2 = plt.figure()
+plt.subplot( 2 ,3 , 1)
+al = np.array( al )
+sn.scatterplot(x = al[:,0] , y = al[:,1] )
+plt.xlabel('Area' + unt2, fontsize = 12) 
+plt.ylabel('<L>' + unt , fontsize = 12) 
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+#plt.show()
+
+plt.subplot( 2 ,3 , 2)
+al = np.array( al )
+py = np.array( py )
+sn.scatterplot(x = py , y = al[:,1] )
+plt.xlabel('polygonality', fontsize = 12) 
+plt.ylabel('<L>' + unt, fontsize = 12) 
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+plt.xticks( nbin )
+
+plt.subplot( 2 ,3 , 3)
+sn.scatterplot(x = py , y = al[:,0] )
+plt.xlabel('polygonality', fontsize = 12) 
+plt.ylabel('Area' + unt2 , fontsize = 12) 
+plt.yticks(fontsize = 12)
+plt.xticks(fontsize =12)
+plt.xticks( nbin )
+plt.show()
+
+
+
+# ---
+ra  = np.sum( meanNe )/len(AllnndVal)
+re  = 0.5*( 1/ np.sqrt(len(AllnndVal)/np.sum(ar)))
+print( "Measure of random:" ,   round( ra/re , 3 ) )
+# ---
+print("\n\n ------------------------ \n\n")
+print("Voronoi Entropy :"   , vorEnt )
+print("Irregularity score :", IRR )
+print("<C.V.> in length :", round( np.mean(regL) , 3 ) )
