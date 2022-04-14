@@ -11,9 +11,7 @@ from shapely.ops import polygonize
 from scipy.spatial import ConvexHull
 from matplotlib.ticker import MaxNLocator
 import cv2
-import cv2
 
-import plot_Simvoronoi as plotsimdata
 
 
 
@@ -45,7 +43,7 @@ def calculate_area( vv , p ):
 	return area
 
 # Returns cartesian coordinates from polar
-def pointOnCirl( radius  , theta  , w , h ):
+def pointOnCirl( radius  , theta  , w , h , OffsetAU ):
 	radius = radius + OffsetAU
 	theta =theta*np.pi/180.0
 	return radius*np.cos( theta ) + w/2  , radius*np.sin( theta ) + h/2 
@@ -53,7 +51,7 @@ def pointOnCirl( radius  , theta  , w , h ):
 
 
 # return true if data lies inside the circle, false if outside
-def checkCircle( dp , radius ):
+def checkCircle( dp , radius , w , h ):
 	return( (( dp[0] - (w/2.0))**2 + (dp[1] - (h/2.0))**2 ) < radius**2 )
 
 # return sq. dist	
@@ -64,7 +62,7 @@ def get_sdistance(P1, P2):
 # merge the coordinates based on the distance b/w the.
 # Not needed for expt data at the moment 
 # needed for simulation data - as 2 asters could be over-lapping 
-def merge_coordinates(datapoints, dist_cutoff):	
+def merge_coordinates(datapoints, dist_cutoff , OffsetAU ):	
 	exclude_datapoints = [];
 	distance_metrix = [];
 

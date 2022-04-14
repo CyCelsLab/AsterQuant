@@ -47,6 +47,9 @@ Execute the following in the shell command line
          This contains: 
          1. display_Voronoi  >> Data points and Voronoi tessellated image
          2. Overlays_Voronoi >> Overlays above with the raw image if required
+         3. RawVoronoi        >> Voronoi image alone
+         4. VorStats            >> composite figure ; with plots of histogram of polygonality, NND, area , length distributions and measures such as circularity , eutacticty
+         5. VorStatsCorrelation >> continued from #4,
 
 <output_files>
 
@@ -54,24 +57,29 @@ Execute the following in the shell command line
          1. AllEutactest.out       >> euctactic measure 
          2. All_NND.out            >> near neighbor distance (NND) for each Voronoi cell
          3. polygonAreaLength.out  >> polygonality, area and lengths of/from each polygons
+         4. measures.csv           >> stores all the regularity measures
       
 
 
 **Scripts**
-1. AsterQuant_V6.py
-2. compute_functions.py
-3. plot_Simvoronoi.py
-4. plot_voronoi.py
-5. coordinate_merger.py
+         1. AsterQuant_V6.py
+         2. compute_functions.py
+         3. coordinate_merger.py
+         4. plot_Quantvoronoi.py
+         5. plot_voronoi.py
+         6. AsterQuant_V6_B.py.ipynb
 
-
-Folder structure
+**Folder structure**
 1. expt                         // These contain input files and images
 2. sim                          // These contain input files and images
 3. output_fig and               // to store the outputs from a run - IMAGES
 4. output_files                 // to store the outputs from a run - MEASURES and ANALYSED DATA
    ( Representative output files and images from phallusia, nematodes and simulations included )
 
+* Make sure "output_fig" and "output_files " exists in the directory 
+* Usage:
+	USer needs to provide the following inputs - Line # 75 -90 along with the description.
+	filenameImage , px2micron , extn , outfilename, u_scale,  method , selectImage , FnameAsterCoor
 
 
 -----------------------------------------------------------------------------------------------------

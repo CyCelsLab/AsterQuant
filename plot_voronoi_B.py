@@ -36,7 +36,7 @@ def plotvoronoiOutput( data_points, vor , CellRad, nRuns ,     outfilename , OPA
 	#CellRad = (( h/2.0 + w/2.0 )/2.0 ) 
 
 
-	plt.close()
+	plt.show()
 	if method ==3:
 
 		anglesbound = np.linspace( 0 , 360 , nb )
@@ -86,7 +86,7 @@ def plotvoronoiOutput( data_points, vor , CellRad, nRuns ,     outfilename , OPA
 		ax = plt.gca()
 		ax.set_aspect('equal', adjustable='box')
 		plt.savefig( OPATH_fig + 'display_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.pdf', bbox_inches='tight' , dpi=600 )
-		plt.close()
+		plt.show()
 		
 		
 	elif method ==4:
@@ -138,7 +138,7 @@ def plotvoronoiOutput( data_points, vor , CellRad, nRuns ,     outfilename , OPA
 			ax.set_aspect('equal', adjustable='box')
 
 		plt.savefig( OPATH_fig + 'Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=300 )
-		plt.close()
+		plt.show()
 		
 
 
@@ -188,7 +188,7 @@ def plotvoronoiOutput( data_points, vor , CellRad, nRuns ,     outfilename , OPA
 			ax.set_aspect('equal', adjustable='box')
 
 		plt.savefig( OPATH_fig + 'Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=300 )
-		plt.close()
+		plt.show()
 		'''
 	
 
@@ -198,7 +198,7 @@ def plotvoronoiOverlay( vor , data_points,  CellRad , nRuns ,  outfilename , OPA
 
 	
 	if method ==4:	
-		plt.close()
+		plt.show()
 		
 		datapoints  = np.array( data_points )
 		plt.imshow( inputimg  , origin = 'lower' )
@@ -224,10 +224,10 @@ def plotvoronoiOverlay( vor , data_points,  CellRad , nRuns ,  outfilename , OPA
 		plt.xlim( 0 , w )
 		plt.ylim( 0 , h )
 		plt.savefig( OPATH_fig + 'Overlays_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.pdf', bbox_inches='tight' , dpi=300 )
-
+		plt.show()
 	
 	elif method == 3:
-		plt.close()
+		plt.show()
 		anglesbound = np.linspace( 0 , 360 , nb )
 		boundary_points = []
 			
@@ -264,10 +264,10 @@ def plotvoronoiOverlay( vor , data_points,  CellRad , nRuns ,  outfilename , OPA
 		plt.ylim( 0 , h )
 		ax.set_facecolor('#210000ff')
 		plt.savefig( OPATH_fig + 'Overlays_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.pdf', bbox_inches='tight' , dpi=300 )
-
+		plt.show()
 	else:
 	
-		plt.close()
+		plt.show()
 		points        =  data_points    
 		vorpoints   = np.array( vor.points )
 		datapoints  = np.array( data_points )
@@ -290,7 +290,7 @@ def plotvoronoiOverlay( vor , data_points,  CellRad , nRuns ,  outfilename , OPA
 		plt.ylim( 0 , h+1 )
 		ax.set_facecolor('#210000ff')
 		plt.savefig( OPATH_fig + 'Overlays_Voronoi_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.pdf', bbox_inches='tight' , dpi=300 )
-
+		plt.show()
 
 
 
@@ -299,31 +299,31 @@ def plotvoronoiRaw( vor ,  CellRad , nRuns ,  inner_bp , outfilename , OPATH_fig
 
 	#print( e_A , e_B )
 	if method ==4:
-		plt.close()
+		plt.show()
 			
 		ax = plt.gca()		
 		voronoi_plot_2d( vor, line_colors='black', line_width=1 , line_alpha=0.8 , show_vertices= False , vertice_size = 0.0005 , show_points = True , point_size= 1 )
 		plt.savefig( OPATH_fig + 'RawVoronoi_' + str( "%s" % outfilename ) + '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=600 )
-		plt.close()
+		plt.show()
 		
 		
 		
 	elif method == 2:
-		plt.close()		
+		plt.show()		
 		ax = plt.gca()		
 		voronoi_plot_2d( vor, line_colors='black', line_width=1 , line_alpha=0.8 , show_vertices= False , vertice_size = 0.0005 , show_points = True , point_size= 1 )
 		plt.savefig( OPATH_fig + 'RawVoronoi_' + str( "%s" % outfilename ) + '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=600 )
-		plt.close()
+		plt.show()
 		
 	
 
 	else:
 
-		plt.close()		
+		plt.show()		
 		ax = plt.gca()		
 		voronoi_plot_2d( vor, line_colors='black', line_width=1 , line_alpha=0.8 , show_vertices= False , vertice_size = 0.0005 , show_points = True , point_size= 1 )
 		plt.savefig( OPATH_fig + 'RawVoronoi_' + str( "%s" % outfilename ) + '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=600 )
-		plt.close()		
+		plt.show()		
 
 		# ---------------------------------------------------------------------
 		#points       =  data_points    +  inner_bp #.tolist()
@@ -374,7 +374,7 @@ def plotvoronoiRaw( vor ,  CellRad , nRuns ,  inner_bp , outfilename , OPATH_fig
 		#ax.set_aspect('equal', adjustable='box')
 		ax.set_facecolor('#210000ff')
 		plt.savefig( OPATH_fig + 'RawVoronoiBound_' + str( "%s" % outfilename )+ '_nRun_' + str( "%s" %  nRuns ) + '.tiff', bbox_inches='tight' , dpi=300 )
-		plt.close()
+		plt.show()
 #	
 
 def checkCircle( dp , radius , w , h , OffsetAU   ):
