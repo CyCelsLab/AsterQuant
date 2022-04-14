@@ -45,6 +45,7 @@ Execute the following in the shell command line
 
 
 **Scripts**
+
          1. AsterQuant_V6.py
          2. compute_functions.py
          3. coordinate_merger.py
